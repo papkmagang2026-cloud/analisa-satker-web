@@ -2,29 +2,92 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>Analisa Satker -- Uji Coba Koneksi</title>
+<title>Analisa Satker -- Uji Coba</title>
 <style>
-  body{font-family:system-ui,sans-serif;max-width:640px;margin:60px auto;padding:0 20px;color:#1B2430;}
+  body{font-family:system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;color:#1B2430;}
   h1{font-size:20px;}
   button{padding:10px 18px;font-size:14px;border-radius:8px;border:1px solid #ccc;background:#0F3B5C;color:#fff;cursor:pointer;}
+  select{padding:10px;font-size:14px;border-radius:8px;border:1px solid #ccc;width:100%;margin-bottom:10px;}
   pre{background:#f5f6f8;padding:14px;border-radius:8px;white-space:pre-wrap;word-break:break-word;font-size:12px;}
+  .card{background:#fff;border:1px solid #E3E6EB;border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+  .card .t{font-weight:700;color:#0F3B5C;}
+  .card .p{font-size:22px;font-weight:700;margin:4px 0;}
+  .card .sub{font-size:12px;color:#667085;}
+  section{margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid #eee;}
 </style>
 </head>
 <body>
-  <h1>Uji Coba Koneksi Netlify &rarr; Google Sheets</h1>
-  <p>Ini halaman sementara untuk memastikan Netlify Function bisa membaca sheet "Database" kamu lewat Service Account, sebelum kita lanjut membangun tampilan penuh.</p>
-  <button id="btn">Ambil Daftar Satker</button>
-  <pre id="out">(belum ditekan)</pre>
+  <h1>Uji Coba Netlify &rarr; Google Sheets</h1>
+
+  <section>
+    <h2>1. Daftar Satker</h2>
+    <button id="btnSatker">Ambil Daftar Satker</button>
+    <pre id="outSatker">(belum ditekan)</pre>
+  </section>
+
+  <section>
+    <h2>2. Analisa Rasio per Satker</h2>
+    <select id="satkerSelect"><option>-- ambil daftar satker dulu --</option></select>
+    <button id="btnRasio">Tampilkan Analisa Rasio</button>
+    <div id="rasioCards"></div>
+    <details><summary>Lihat JSON mentah</summary><pre id="outRasio"></pre></details>
+  </section>
+
   <script>
-    document.getElementById('btn').addEventListener('click', async function(){
-      var out = document.getElementById('out');
+    var allSatker = [];
+
+    function fmtRp(n){
+      if (n === null || n === undefined) return '-';
+      return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+    }
+    function fmtPct(n){
+      if (n === null || n === undefined) return '-';
+      return n.toFixed(1).replace('.', ',') + '%';
+    }
+
+    document.getElementById('btnSatker').addEventListener('click', async function(){
+      var out = document.getElementById('outSatker');
       out.textContent = 'Memuat...';
       try {
         var resp = await fetch('/api/get-satker-list');
         var data = await resp.json();
+        allSatker = data;
         out.textContent = JSON.stringify(data, null, 2);
+        var sel = document.getElementById('satkerSelect');
+        sel.innerHTML = data.map(function(s){ return '<option value="' + s.kode + '">' + s.label + '</option>'; }).join('');
       } catch (e) {
         out.textContent = 'Error: ' + e.message;
+      }
+    });
+
+    document.getElementById('btnRasio').addEventListener('click', async function(){
+      var sel = document.getElementById('satkerSelect');
+      var kode = sel.value;
+      var outRasio = document.getElementById('outRasio');
+      var cardsEl = document.getElementById('rasioCards');
+      cardsEl.innerHTML = 'Memuat...';
+      outRasio.textContent = '';
+      try {
+        var resp = await fetch('/api/get-analisa-rasio?kode=' + encodeURIComponent(kode));
+        var data = await resp.json();
+        outRasio.textContent = JSON.stringify(data, null, 2);
+
+        if (data.error) { cardsEl.innerHTML = '<p style="color:red;">' + data.error + '</p>'; return; }
+        if (data.isEmpty) { cardsEl.innerHTML = '<p>Tidak ada data Neraca untuk satker ini.</p>'; return; }
+
+        var html = '<h3>' + data.headerInfo.nama + ' (' + data.headerInfo.kodeSatker + ')</h3>';
+        Object.keys(data.ringkasan).forEach(function(key){
+          var r = data.ringkasan[key];
+          html += '<div class="card">';
+          html += '<div class="t">' + r.label + '</div>';
+          html += '<div class="p">' + fmtPct(r.persentase) + '</div>';
+          html += '<div class="sub">' + r.labelKontra + ': ' + fmtRp(r.kontra) + ' &divide; ' + r.labelPokok + ': ' + fmtRp(r.pokok) + '</div>';
+          html += '<div class="sub">Rata-rata satker lain: ' + fmtPct(r.benchmarkPersentase) + ' (' + r.jumlahSatkerPembanding + ' satker) &middot; status: ' + (r.statusVsBenchmark || '-') + '</div>';
+          html += '</div>';
+        });
+        cardsEl.innerHTML = html;
+      } catch (e) {
+        cardsEl.innerHTML = '<p style="color:red;">Error: ' + e.message + '</p>';
       }
     });
   </script>
