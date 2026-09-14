@@ -33,6 +33,13 @@
     <details><summary>Lihat JSON mentah</summary><pre id="outRasio"></pre></details>
   </section>
 
+  <section>
+    <h2>3. Dashboard Ikhtisar (Ranking Semua Satker)</h2>
+    <button id="btnIkhtisar">Tampilkan Ikhtisar</button>
+    <div id="ikhtisarCards"></div>
+    <details><summary>Lihat JSON mentah</summary><pre id="outIkhtisar"></pre></details>
+  </section>
+
   <script>
     var allSatker = [];
 
@@ -85,6 +92,55 @@
           html += '<div class="sub">Rata-rata satker lain: ' + fmtPct(r.benchmarkPersentase) + ' (' + r.jumlahSatkerPembanding + ' satker) &middot; status: ' + (r.statusVsBenchmark || '-') + '</div>';
           html += '</div>';
         });
+        cardsEl.innerHTML = html;
+      } catch (e) {
+        cardsEl.innerHTML = '<p style="color:red;">Error: ' + e.message + '</p>';
+      }
+    });
+
+    document.getElementById('btnIkhtisar').addEventListener('click', async function(){
+      var outIkhtisar = document.getElementById('outIkhtisar');
+      var cardsEl = document.getElementById('ikhtisarCards');
+      cardsEl.innerHTML = 'Memuat...';
+      outIkhtisar.textContent = '';
+      try {
+        var resp = await fetch('/api/get-dashboard-ikhtisar');
+        var data = await resp.json();
+        outIkhtisar.textContent = JSON.stringify(data, null, 2);
+
+        if (data.error) { cardsEl.innerHTML = '<p style="color:red;">' + data.error + '</p>'; return; }
+        if (data.isEmpty) { cardsEl.innerHTML = '<p>Belum ada data Neraca.</p>'; return; }
+
+        var html = '';
+        html += '<div class="card"><div class="t">Ringkasan</div>' +
+          '<div class="sub">Satker terpantau: ' + data.ringkasanStrip.jumlahSatker +
+          ' &middot; Perlu perhatian: ' + data.ringkasanStrip.perluPerhatian +
+          ' &middot; Di bawah rata-rata: ' + data.ringkasanStrip.diBawahRataRata + '</div>';
+        if (data.ringkasanStrip.sorotan) {
+          html += '<div class="sub" style="margin-top:6px;"><b>Sorotan:</b> ' + data.ringkasanStrip.sorotan.namaSatker +
+            ' (di atas rata-rata pada ' + data.ringkasanStrip.sorotan.aboveCount + '/' + data.ringkasanStrip.sorotan.totalRasioCount + ' rasio)</div>';
+        }
+        html += '</div>';
+
+        html += '<h3>Peringkat Rasio (Top 5 per kartu)</h3>';
+        data.rasioRanking.forEach(function(r){
+          html += '<div class="card"><div class="t">' + r.label + '</div><div class="sub">' + r.jumlahSatkerAda + ' satker punya data</div>';
+          r.satkerList.slice(0, 5).forEach(function(s, i){
+            html += '<div class="sub">' + (i+1) + '. ' + s.namaSatker + ' -- ' + fmtPct(s.persentase) + '</div>';
+          });
+          if (!r.satkerList.length) html += '<div class="sub">(belum ada satker dengan data lengkap)</div>';
+          html += '</div>';
+        });
+
+        html += '<h3>Akun Perhatian Khusus (Top 5 per akun)</h3>';
+        data.akunKhususList.filter(function(a){ return a.mode !== 'kosong'; }).forEach(function(a){
+          html += '<div class="card"><div class="t">' + a.label + '</div><div class="sub">Kode ' + a.kode + ' &middot; total semua satker: ' + fmtRp(a.totalSemuaSatker) + '</div>';
+          a.satkerList.slice(0, 5).forEach(function(s, i){
+            html += '<div class="sub">' + (i+1) + '. ' + s.namaSatker + ' -- ' + fmtRp(s.nilai) + '</div>';
+          });
+          html += '</div>';
+        });
+
         cardsEl.innerHTML = html;
       } catch (e) {
         cardsEl.innerHTML = '<p style="color:red;">Error: ' + e.message + '</p>';
