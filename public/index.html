@@ -2,205 +2,597 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>Analisa Satker -- Uji Coba</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analisa Rasio Laporan Keuangan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body{font-family:system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;color:#1B2430;}
-  h1{font-size:20px;}
-  button{padding:10px 18px;font-size:14px;border-radius:8px;border:1px solid #ccc;background:#0F3B5C;color:#fff;cursor:pointer;}
-  select{padding:10px;font-size:14px;border-radius:8px;border:1px solid #ccc;width:100%;margin-bottom:10px;}
-  pre{background:#f5f6f8;padding:14px;border-radius:8px;white-space:pre-wrap;word-break:break-word;font-size:12px;}
-  .card{background:#fff;border:1px solid #E3E6EB;border-radius:10px;padding:14px 16px;margin-bottom:10px;}
-  .card .t{font-weight:700;color:#0F3B5C;}
-  .card .p{font-size:22px;font-weight:700;margin:4px 0;}
-  .card .sub{font-size:12px;color:#667085;}
-  section{margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid #eee;}
+:root{
+  --navy:#0F3B5C; --navy-deep:#0A2C46; --gold:#B4882E; --bg:#F5F6F8; --card:#FFFFFF;
+  --line:#E3E6EB; --text:#1B2430; --muted:#667085; --pos:#1B7A45; --neg:#B3261E;
+  --warn:#B3261E; --warn-bg:#FDECEA; --ok-bg:#EAF6EF;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;}
+h1,h2,h3{font-family:'Source Serif 4',Georgia,serif;margin:0;}
+.topbar{background:linear-gradient(180deg,var(--navy) 0%,var(--navy-deep) 100%);color:#fff;padding:22px 28px 20px;}
+.topbar-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:14px;}
+.mark{width:34px;height:34px;border-radius:3px;background:var(--gold);display:flex;align-items:center;justify-content:center;
+  font-family:'Source Serif 4',serif;font-weight:700;color:var(--navy-deep);font-size:16px;flex:none;}
+.topbar h1{font-size:19px;font-weight:600;}
+.topbar p{margin:2px 0 0;font-size:12.5px;color:#C9D6E3;}
+.wrap{max-width:1080px;margin:0 auto;padding:26px 28px 60px;}
+.satker-picker label{display:block;font-size:12.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px;}
+.combo-wrap{position:relative;max-width:480px;}
+#satkerInput{width:100%;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--navy-deep);
+  padding:10px 14px;border-radius:7px;border:1px solid var(--line);background:#fff;}
+.dropdown-list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:20;background:#fff;border:1px solid var(--line);
+  border-radius:9px;box-shadow:0 10px 24px rgba(16,24,40,.12);max-height:320px;overflow-y:auto;display:none;}
+.dropdown-list.open{display:block;}
+.dropdown-item{padding:10px 14px;font-size:13.5px;cursor:pointer;border-bottom:1px solid #F3F4F6;}
+.dropdown-item:hover{background:#F6F8FB;}
+.dropdown-item .nm{font-weight:600;}
+.dropdown-item .kd{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.dash-head{display:flex;align-items:flex-start;gap:14px;margin:22px 0 20px;}
+.dash-head .rule{width:3px;align-self:stretch;background:var(--gold);border-radius:2px;min-height:44px;}
+.dash-title{font-size:22px;font-weight:600;color:var(--navy-deep);}
+.dash-sub{font-size:12.5px;color:var(--muted);margin-top:3px;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--navy);
+  background:#fff;border:1px solid var(--line);border-radius:20px;padding:8px 14px;cursor:pointer;white-space:nowrap;}
+.back-btn:hover{background:#F6F8FB;border-color:var(--gold);}
+.ik-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.ik-strip-box{border-radius:14px;padding:16px 18px;border:1px solid var(--line);background:var(--card);}
+.ik-strip-box .lbl{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;}
+.ik-strip-box .num{font-family:'Source Serif 4',serif;font-size:26px;font-weight:700;color:var(--navy-deep);margin-top:6px;}
+.ik-strip-box.navy{background:linear-gradient(135deg,var(--navy-deep),var(--navy));border-color:transparent;}
+.ik-strip-box.navy .lbl{color:#C9D6E3;} .ik-strip-box.navy .num{color:#fff;}
+.ik-strip-box.warn{background:var(--warn-bg);border-color:#F5D4D0;} .ik-strip-box.warn .lbl,.ik-strip-box.warn .num{color:var(--neg);}
+.ik-strip-box.ok{background:var(--ok-bg);border-color:#CDEBDB;} .ik-strip-box.ok .lbl,.ik-strip-box.ok .num{color:var(--pos);}
+@media (max-width:760px){.ik-strip{grid-template-columns:1fr 1fr;}}
+.ik-spotlight{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--navy-deep),var(--navy));
+  color:#fff;border-radius:14px;padding:18px 20px;margin-bottom:22px;cursor:pointer;}
+.ik-spotlight .tag{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--gold);}
+.ik-spotlight .nm{font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-top:4px;}
+.ik-spotlight .ket{font-size:12px;color:#C9D6E3;margin-top:2px;}
+.ik-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.ik-tab{font-size:13px;font-weight:600;padding:9px 18px;border-radius:22px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--muted);}
+.ik-tab.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+.ik-tab-panel{display:none;} .ik-tab-panel.active{display:block;}
+.ikhtisar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.ik-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;
+  box-shadow:0 1px 2px rgba(16,24,40,.04);display:flex;flex-direction:column;}
+.ik-card-head .t1{font-size:13.5px;font-weight:700;color:var(--navy-deep);}
+.ik-card-head .t2{font-size:11px;color:var(--muted);margin-top:3px;}
+.ik-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #F2F3F5;cursor:pointer;}
+.ik-row:last-child{border-bottom:none;}
+.ik-row:hover .ik-row-name{color:var(--navy);text-decoration:underline;}
+.ik-rank{width:22px;height:22px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:10.5px;font-weight:700;color:#fff;background:#9CA9B8;}
+.ik-rank.r1{background:var(--gold);} .ik-rank.r2{background:#8B96A3;} .ik-rank.r3{background:#B08A57;}
+.ik-row-body{flex:1;min-width:0;}
+.ik-row-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ik-row-bar-wrap{height:5px;background:#EEF0F3;border-radius:4px;margin-top:5px;overflow:hidden;}
+.ik-row-bar{height:100%;border-radius:4px;}
+.ik-row-val{flex:none;font-size:11.5px;font-weight:700;color:var(--navy-deep);text-align:right;min-width:56px;}
+.ik-more{margin-top:10px;text-align:center;font-size:11px;font-weight:600;color:var(--navy);cursor:pointer;
+  padding-top:9px;border-top:1px dashed var(--line);}
+.ik-empty{font-size:11.5px;color:var(--muted);padding:6px 0;}
+.satker-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+@media (max-width:760px){.satker-grid{grid-template-columns:1fr;}}
+.satker-panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+.satker-panel h3{font-size:14px;font-weight:600;color:var(--navy-deep);margin-bottom:12px;}
+.bubble-stage{position:relative;width:100%;min-height:280px;background:var(--card);border:1px solid var(--line);
+  border-radius:16px;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+.bubble-layer{position:relative;display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;padding:28px 20px 40px;}
+.bubble-wrap{display:flex;flex-direction:column;align-items:center;}
+.bubble{border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
+  position:relative;border:none;box-shadow:0 12px 26px rgba(16,24,40,.16),inset 0 -14px 20px rgba(0,0,0,.08),inset 0 10px 16px rgba(255,255,255,.3);}
+.bubble .pct{font-family:'Source Serif 4',serif;font-weight:600;color:#fff;line-height:1;}
+.bubble .lbl2{color:rgba(255,255,255,.92);font-weight:700;text-transform:uppercase;margin-top:5px;text-align:center;padding:0 12px;}
+svg.bubble-ring{position:absolute;top:0;left:0;transform:rotate(-90deg);pointer-events:none;}
+.bubble-caption{margin-top:12px;text-align:center;max-width:180px;}
+.bubble-caption .name{font-size:12.5px;font-weight:700;color:var(--navy-deep);}
+.bubble-caption .status{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;margin-top:6px;}
+.bubble-caption .status.diatas{background:var(--warn-bg);color:var(--neg);}
+.bubble-caption .status.dibawah{background:var(--ok-bg);color:var(--pos);}
+.bubble-caption .status.sama{background:#EEF0F3;color:var(--muted);}
+.bubble-caption .status.na{background:#EEF0F3;color:var(--muted);}
+.bubble-caption .hint{font-size:10px;color:var(--muted);margin-top:5px;}
+.rasio-detail-page{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 24px 40px;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+.detail-title{text-align:center;margin-bottom:26px;}
+.detail-title .t1{font-size:10.5px;font-weight:700;color:var(--gold);text-transform:uppercase;}
+.detail-title .t2{font-size:17px;font-weight:600;color:var(--navy-deep);margin-top:2px;}
+.detail-cluster{display:flex;align-items:center;justify-content:center;gap:34px;flex-wrap:wrap;max-width:720px;margin:0 auto;}
+.mini-wrap{display:flex;flex-direction:column;align-items:center;}
+.mini-bubble{border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;
+  box-shadow:0 8px 16px rgba(16,24,40,.14),inset 0 -8px 12px rgba(0,0,0,.08),inset 0 6px 10px rgba(255,255,255,.3);}
+.mini-bubble .v{font-family:'Source Serif 4',serif;font-weight:600;line-height:1;}
+.mini-bubble .p{font-weight:700;opacity:.9;margin-top:3px;}
+.mini-caption{margin-top:9px;text-align:center;max-width:124px;}
+.mini-caption .n{font-size:11px;font-weight:700;color:var(--text);}
+.mini-caption .sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.state{padding:50px 20px;text-align:center;color:var(--muted);}
+.state .big{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid #DDE2E8;border-top-color:var(--navy);
+  animation:spin .8s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.doc-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;}
+.doc-head .rule{width:3px;align-self:stretch;background:var(--gold);border-radius:2px;min-height:38px;}
+.doc-title{font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;color:var(--navy-deep);}
+.doc-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.group{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.group-title{font-size:12.5px;font-weight:700;color:#fff;background:var(--navy);padding:9px 14px;}
+.group table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.group td{padding:7px 14px;border-bottom:1px solid #F0F1F3;}
+.group td:nth-child(2){text-align:right;font-variant-numeric:tabular-nums;}
+.group tr.subgroup-row td{font-weight:700;color:var(--navy-deep);background:#FAFBFC;font-size:11.5px;text-transform:uppercase;}
+.group tr.account td:first-child{padding-left:26px;color:var(--text);}
+.group tr.subtotal td{font-weight:700;color:var(--navy-deep);background:#F6F8FB;border-top:1px solid var(--line);}
+.group td.neg{color:var(--neg);}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--navy-deep);color:#fff;
+  border-radius:14px;padding:18px 22px;margin-top:8px;}
+.hero .label{font-size:11.5px;color:#C9D6E3;text-transform:uppercase;font-weight:700;}
+.hero .value{font-family:'Source Serif 4',serif;font-size:20px;font-weight:600;margin-top:4px;}
+.hero .value.neg{color:#FF9D93;} .hero .value.pos{color:#8FE3B0;}
+.hero .tag{font-size:11px;font-weight:700;background:rgba(255,255,255,.14);padding:6px 14px;border-radius:20px;white-space:nowrap;}
+.laporan-tabs{display:flex;gap:8px;margin:18px 0;}
+.laporan-tab{font-size:12.5px;font-weight:600;padding:8px 16px;border-radius:20px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--muted);}
+.laporan-tab.active{background:var(--navy);border-color:var(--navy);color:#fff;}
 </style>
 </head>
 <body>
-  <h1>Uji Coba Netlify &rarr; Google Sheets</h1>
 
-  <section>
-    <h2>1. Daftar Satker</h2>
-    <button id="btnSatker">Ambil Daftar Satker</button>
-    <pre id="outSatker">(belum ditekan)</pre>
-  </section>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="mark">LK</div>
+    <div><h1>Analisa Rasio Laporan Keuangan</h1><p>Sumber data: sheet "Database" &middot; Nilai Audited</p></div>
+  </div>
+</div>
 
-  <section>
-    <h2>2. Analisa Rasio per Satker</h2>
-    <select id="satkerSelect"><option>-- ambil daftar satker dulu --</option></select>
-    <button id="btnRasio">Tampilkan Analisa Rasio</button>
-    <div id="rasioCards"></div>
-    <details><summary>Lihat JSON mentah</summary><pre id="outRasio"></pre></details>
-  </section>
+<div class="wrap">
+  <div class="satker-picker">
+    <label for="satkerInput">Satker</label>
+    <div class="combo-wrap">
+      <input type="text" id="satkerInput" placeholder="Cari nama atau kode satker..." autocomplete="off">
+      <div id="satkerDropdown" class="dropdown-list"></div>
+    </div>
+  </div>
 
-  <section>
-    <h2>3. Dashboard Ikhtisar (Ranking Semua Satker)</h2>
-    <button id="btnIkhtisar">Tampilkan Ikhtisar</button>
-    <div id="ikhtisarCards"></div>
-    <details><summary>Lihat JSON mentah</summary><pre id="outIkhtisar"></pre></details>
-  </section>
+  <div class="dash-head">
+    <div class="rule"></div>
+    <div style="flex:1;">
+      <div class="dash-title" id="dashTitle">Ikhtisar Seluruh Satker</div>
+      <div class="dash-sub" id="dashSub">Ringkasan peringkat rasio dari seluruh satker. Pilih satker di atas untuk melihat detail.</div>
+    </div>
+    <div class="back-btn" id="backToIkhtisar" style="display:none;">&larr; Ringkasan Semua Satker</div>
+  </div>
 
-  <section>
-    <h2>4. Laporan LO / LRA / Neraca</h2>
-    <select id="jenisLaporan">
-      <option value="lo">Laporan Operasional (LO)</option>
-      <option value="lra">Laporan Realisasi Anggaran (LRA)</option>
-      <option value="neraca">Neraca</option>
-    </select>
-    <button id="btnLaporan">Tampilkan Laporan</button>
-    <div id="laporanCards"></div>
-    <details><summary>Lihat JSON mentah</summary><pre id="outLaporan"></pre></details>
-  </section>
+  <div id="ikhtisarWrap">
+    <div id="ikhtisarLoading" class="state"><div class="spinner"></div><div class="big">Menyusun ikhtisar...</div></div>
+    <div id="ikhtisarContent" style="display:none;"></div>
+  </div>
 
-  <script>
-    var allSatker = [];
+  <div id="rasioLoading" class="state" style="display:none;"><div class="spinner"></div><div class="big">Menghitung rasio...</div></div>
+  <div id="rasioContent" style="display:none;"></div>
 
-    function fmtRp(n){
-      if (n === null || n === undefined) return '-';
-      return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+  <div id="rasioDetailWrap" style="display:none;">
+    <div class="dash-head">
+      <div class="rule"></div>
+      <div style="flex:1;"><div class="dash-title" id="rdTitle">Rincian</div><div class="dash-sub" id="rdSub"></div></div>
+      <div class="back-btn" id="backToSatkerDash">&larr; Kembali</div>
+    </div>
+    <div class="rasio-detail-page">
+      <div class="detail-title"><div class="t1" id="detTag">Rincian</div><div class="t2" id="detTitle"></div></div>
+      <div class="detail-cluster" id="detailCluster"></div>
+    </div>
+  </div>
+
+  <div id="laporanWrap" style="display:none;">
+    <div class="dash-head">
+      <div class="rule"></div>
+      <div style="flex:1;"><div class="dash-title">Laporan Keuangan</div><div class="dash-sub" id="laporanSub"></div></div>
+      <div class="back-btn" id="backFromLaporan">&larr; Kembali</div>
+    </div>
+    <div class="laporan-tabs">
+      <div class="laporan-tab active" data-jenis="lo">LO</div>
+      <div class="laporan-tab" data-jenis="lra">LRA</div>
+      <div class="laporan-tab" data-jenis="neraca">Neraca</div>
+    </div>
+    <div id="laporanContent"></div>
+  </div>
+</div>
+
+<script>
+var allSatker = [];
+var currentSatker = null;
+var currentRingkasan = null;
+var currentLaporanJenis = 'lo';
+var ikhtisarDataCache = null;
+
+function fmt(n){ if (n===null||n===undefined) return '-'; var neg=n<0; var abs=Math.abs(Math.round(n));
+  var s=abs.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.'); return neg?'('+s+')':s; }
+function fmtRp(n){ if(n===null||n===undefined) return '-';
+  if (Math.abs(n)>=1e9) return 'Rp '+(n/1e9).toFixed(1).replace('.',',')+' M';
+  if (Math.abs(n)>=1e6) return 'Rp '+(n/1e6).toFixed(0)+' jt';
+  return 'Rp '+fmt(n); }
+function fmtPct(n){ if(n===null||n===undefined) return '-'; return n.toFixed(1).replace('.',',')+'%'; }
+
+// ---------- gradasi warna hijau->kuning->merah berdasar persentase ----------
+var A_HIJAU=[39,154,91], A_KUNING=[230,196,40], A_MERAH=[200,72,63];
+var B_HIJAU=[21,92,54], B_KUNING=[156,128,18], B_MERAH=[142,46,39];
+function lerp(x,y,t){ return Math.round(x+(y-x)*t); }
+function mix3(a,b,c,t){ var r,g,bl; if(t<=0.5){var t2=t/0.5;r=lerp(a[0],b[0],t2);g=lerp(a[1],b[1],t2);bl=lerp(a[2],b[2],t2);}
+  else{var t3=(t-0.5)/0.5;r=lerp(b[0],c[0],t3);g=lerp(b[1],c[1],t3);bl=lerp(b[2],c[2],t3);} return 'rgb('+r+','+g+','+bl+')'; }
+function gradFor(pct){ if(pct===null||pct===undefined) return {a:'#9CA9B8',b:'#71808F'};
+  var t=Math.max(0,Math.min(100,pct))/100; return {a:mix3(A_HIJAU,A_KUNING,A_MERAH,t), b:mix3(B_HIJAU,B_KUNING,B_MERAH,t)}; }
+function ringSvg(size,pct){ var stroke=Math.max(3,Math.round(size*0.028)); var r=size/2-stroke-3; var c=2*Math.PI*r;
+  var dash=(Math.max(0,Math.min(100,pct||0))/100)*c; var cx=size/2,cy=size/2;
+  return '<svg class="bubble-ring" width="'+size+'" height="'+size+'"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" stroke="rgba(255,255,255,.28)" stroke-width="'+stroke+'" fill="none"/>' +
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" stroke="#fff" stroke-width="'+stroke+'" fill="none" stroke-dasharray="'+dash+' '+c+'" stroke-linecap="round"/></svg>'; }
+function bubbleSize(nilai,minV,maxV,minPx,maxPx){ if(maxV===minV) return (minPx+maxPx)/2;
+  var raw=(nilai-minV)/(maxV-minV); var t=Math.sqrt(Math.max(0,Math.min(1,raw))); return Math.round(minPx+t*(maxPx-minPx)); }
+function badgeInfo(status){
+  if(status==='diatas') return {cls:'diatas',label:'Di atas rata-rata satker lain'};
+  if(status==='dibawah') return {cls:'dibawah',label:'Di bawah rata-rata satker lain'};
+  if(status==='sama') return {cls:'sama',label:'Setara rata-rata satker lain'};
+  return {cls:'na',label:'Belum ada pembanding'};
+}
+
+async function fetchJSON(url){ var resp=await fetch(url); var data=await resp.json(); if(data.error) throw new Error(data.error); return data; }
+
+// ---------- Satker picker ----------
+async function loadSatkerList(){
+  try{ allSatker = await fetchJSON('/api/get-satker-list'); renderDropdown(''); }
+  catch(e){ console.error(e); }
+}
+function renderDropdown(query){
+  var dd=document.getElementById('satkerDropdown'); var q=(query||'').trim().toLowerCase();
+  var list=allSatker.filter(function(s){ return !q || s.nama.toLowerCase().indexOf(q)>-1 || s.kode.toLowerCase().indexOf(q)>-1; });
+  if(!list.length){ dd.innerHTML='<div class="dropdown-item">Tidak ada satker yang cocok</div>'; return; }
+  dd.innerHTML=list.slice(0,50).map(function(s){
+    return '<div class="dropdown-item" data-kode="'+s.kode+'"><div class="nm">'+s.nama+'</div><div class="kd">Kode: '+s.kode+'</div></div>';
+  }).join('');
+  Array.prototype.forEach.call(dd.querySelectorAll('.dropdown-item'), function(el){
+    el.addEventListener('click', function(){
+      var kode=el.getAttribute('data-kode'); if(!kode) return;
+      var s=allSatker.filter(function(x){return x.kode===kode;})[0];
+      document.getElementById('satkerInput').value = s?s.label:kode;
+      dd.classList.remove('open');
+      selectSatker(kode);
+    });
+  });
+}
+var satkerInput=document.getElementById('satkerInput');
+var satkerDropdown=document.getElementById('satkerDropdown');
+satkerInput.addEventListener('input', function(){ renderDropdown(satkerInput.value); satkerDropdown.classList.add('open'); });
+satkerInput.addEventListener('focus', function(){ renderDropdown(satkerInput.value); satkerDropdown.classList.add('open'); });
+document.addEventListener('click', function(e){ if(!e.target.closest('.combo-wrap')) satkerDropdown.classList.remove('open'); });
+
+function selectSatker(kode){ currentSatker = kode; loadRasio(kode); }
+
+// ---------- IKHTISAR ----------
+async function loadIkhtisar(){
+  document.getElementById('ikhtisarLoading').style.display='block';
+  document.getElementById('ikhtisarContent').style.display='none';
+  try{ var data = await fetchJSON('/api/get-dashboard-ikhtisar'); ikhtisarDataCache=data; renderIkhtisar(data); }
+  catch(e){ showIkhtisarError(e); }
+}
+function showIkhtisarError(e){
+  document.getElementById('ikhtisarLoading').style.display='none';
+  var c=document.getElementById('ikhtisarContent'); c.style.display='block';
+  c.innerHTML='<div class="state"><div class="big" style="color:var(--neg)">Gagal memuat</div><div>'+e.message+'</div></div>';
+}
+function ikRowsHtml(list, valueFn, barPctFn, colorFn){
+  return list.map(function(item,i){
+    var rankCls = i===0?' r1':(i===1?' r2':(i===2?' r3':''));
+    var col = colorFn(item,i);
+    return '<div class="ik-row" data-kode="'+item.kodeSatker+'">' +
+      '<div class="ik-rank'+rankCls+'">'+(i+1)+'</div>' +
+      '<div class="ik-row-body"><div class="ik-row-name">'+item.namaSatker+'</div>' +
+      '<div class="ik-row-bar-wrap"><div class="ik-row-bar" style="width:'+barPctFn(item)+'%;background:'+col+';"></div></div></div>' +
+      '<div class="ik-row-val">'+valueFn(item)+'</div></div>';
+  }).join('');
+}
+function attachRowClicks(root){
+  Array.prototype.forEach.call(root.querySelectorAll('[data-kode]'), function(el){
+    el.addEventListener('click', function(){
+      var kode = el.getAttribute('data-kode');
+      var s = allSatker.filter(function(x){return x.kode===kode;})[0];
+      document.getElementById('satkerInput').value = s?s.label:kode;
+      selectSatker(kode);
+    });
+  });
+}
+function ikFmtRpBesar(n){ if(n===null||n===undefined) return '-';
+  var abs=Math.abs(n);
+  if(abs>=1e12) return 'Rp '+(n/1e12).toFixed(1).replace('.',',')+' T';
+  if(abs>=1e9) return 'Rp '+(n/1e9).toFixed(1).replace('.',',')+' M';
+  if(abs>=1e6) return 'Rp '+(n/1e6).toFixed(0)+' jt';
+  return 'Rp '+fmt(n);
+}
+function ikSwitchTab(tabKey){
+  Array.prototype.forEach.call(document.querySelectorAll('.ik-tab'), function(t){ t.classList.toggle('active', t.getAttribute('data-ik-tab')===tabKey); });
+  Array.prototype.forEach.call(document.querySelectorAll('.ik-tab-panel'), function(p){ p.classList.toggle('active', p.getAttribute('data-ik-panel')===tabKey); });
+}
+function renderIkhtisar(data){
+  document.getElementById('ikhtisarLoading').style.display='none';
+  var c=document.getElementById('ikhtisarContent'); c.style.display='block';
+  if(data.isEmpty){ c.innerHTML='<div class="state"><div class="big">Belum ada data Neraca</div></div>'; return; }
+
+  var html='';
+  var strip=data.ringkasanStrip;
+  html+='<div class="ik-strip">' +
+    '<div class="ik-strip-box navy"><div class="lbl">Satker Terpantau</div><div class="num">'+strip.jumlahSatker+'</div></div>' +
+    '<div class="ik-strip-box warn"><div class="lbl">Perlu Perhatian</div><div class="num">'+strip.perluPerhatian+'</div></div>' +
+    '<div class="ik-strip-box ok"><div class="lbl">Di Bawah Rata-rata</div><div class="num">'+strip.diBawahRataRata+'</div></div>' +
+    '<div class="ik-strip-box"><div class="lbl">Total Aset Diperiksa</div><div class="num">'+ikFmtRpBesar(strip.totalAsetDiperiksa)+'</div></div></div>';
+
+  if(strip.sorotan){
+    var s=strip.sorotan;
+    html+='<div class="ik-spotlight" data-kode="'+s.kodeSatker+'"><div><div class="tag">Sorotan</div>' +
+      '<div class="nm">'+s.namaSatker+'</div><div class="ket">Di atas rata-rata pada '+s.aboveCount+' dari '+s.totalRasioCount+' rasio</div></div></div>';
+  }
+
+  html+='<div class="ik-tabs"><div class="ik-tab active" data-ik-tab="rasio">Rasio keuangan</div><div class="ik-tab" data-ik-tab="akun">Akun khusus</div></div>';
+
+  html+='<div class="ik-tab-panel active" data-ik-panel="rasio"><div class="ikhtisar-grid">';
+  data.rasioRanking.forEach(function(r){
+    html+='<div class="ik-card"><div class="ik-card-head"><div class="t1">'+r.label+'</div><div class="t2">'+r.labelKontra+' &divide; '+r.labelPokok+'</div></div>';
+    if(!r.satkerList.length){ html+='<div class="ik-empty">Belum ada satker dengan data lengkap.</div>'; }
+    else{
+      var top=r.satkerList.slice(0,5);
+      var maxP=top[0].persentase||0;
+      html+=ikRowsHtml(top, function(x){return fmtPct(x.persentase);}, function(x){return maxP>0?Math.max(4,(x.persentase/maxP)*100):4;}, function(x){return gradFor(x.persentase).a;});
+      if(r.satkerList.length>5) html+='<div class="ik-more" data-expand="1">Lihat semua '+r.satkerList.length+' satker</div>';
     }
-    function fmtPct(n){
-      if (n === null || n === undefined) return '-';
-      return n.toFixed(1).replace('.', ',') + '%';
-    }
+    html+='</div>';
+  });
+  html+='</div></div>';
 
-    document.getElementById('btnSatker').addEventListener('click', async function(){
-      var out = document.getElementById('outSatker');
-      out.textContent = 'Memuat...';
-      try {
-        var resp = await fetch('/api/get-satker-list');
-        var data = await resp.json();
-        allSatker = data;
-        out.textContent = JSON.stringify(data, null, 2);
-        var sel = document.getElementById('satkerSelect');
-        sel.innerHTML = data.map(function(s){ return '<option value="' + s.kode + '">' + s.label + '</option>'; }).join('');
-      } catch (e) {
-        out.textContent = 'Error: ' + e.message;
-      }
+  var akunShown = data.akunKhususList.filter(function(a){return a.mode!=='kosong';});
+  html+='<div class="ik-tab-panel" data-ik-panel="akun"><div class="ikhtisar-grid">';
+  akunShown.forEach(function(a){
+    html+='<div class="ik-card"><div class="ik-card-head"><div class="t1">'+a.label+'</div><div class="t2">Kode '+a.kode+' &middot; Total: '+fmt(a.totalSemuaSatker)+'</div></div>';
+    var top=a.satkerList.slice(0,5); var maxN=top[0]?top[0].nilai:0;
+    html+=ikRowsHtml(top, function(x){return ikFmtRpBesar(x.nilai);}, function(x){return maxN>0?Math.max(4,(x.nilai/maxN)*100):4;}, function(){return '#3E6690';});
+    if(a.satkerList.length>5) html+='<div class="ik-more" data-expand="1">Lihat semua '+a.satkerList.length+' satker</div>';
+    html+='</div>';
+  });
+  html+='</div></div>';
+
+  c.innerHTML=html;
+  attachRowClicks(c);
+  Array.prototype.forEach.call(c.querySelectorAll('.ik-tab'), function(t){ t.addEventListener('click', function(){ ikSwitchTab(t.getAttribute('data-ik-tab')); }); });
+  // "Lihat semua" -- expand kartu itu menampilkan seluruh daftar (ganti isi kartu)
+  Array.prototype.forEach.call(c.querySelectorAll('.ik-more'), function(btn){
+    btn.addEventListener('click', function(){
+      var card = btn.closest('.ik-card');
+      var rows = card.querySelectorAll('.ik-row');
+      // cari data penuh dengan cocokkan judul kartu
+      var title = card.querySelector('.t1').textContent;
+      var full = null;
+      var r1 = data.rasioRanking.filter(function(x){return x.label===title;})[0];
+      var r2 = akunShown.filter(function(x){return x.label===title;})[0];
+      full = r1 || r2;
+      if(!full) return;
+      var isAkun = !!r2;
+      var listAll = full.satkerList;
+      var maxV = isAkun ? (listAll[0]?listAll[0].nilai:0) : (listAll[0]?listAll[0].persentase:0);
+      var rowsHtml = isAkun
+        ? ikRowsHtml(listAll, function(x){return ikFmtRpBesar(x.nilai);}, function(x){return maxV>0?Math.max(4,(x.nilai/maxV)*100):4;}, function(){return '#3E6690';})
+        : ikRowsHtml(listAll, function(x){return fmtPct(x.persentase);}, function(x){return maxV>0?Math.max(4,(x.persentase/maxV)*100):4;}, function(x){return gradFor(x.persentase).a;});
+      var headEl = card.querySelector('.ik-card-head');
+      card.innerHTML = ''; card.appendChild(headEl);
+      var wrap = document.createElement('div'); wrap.innerHTML = rowsHtml; 
+      while(wrap.firstChild) card.appendChild(wrap.firstChild);
+      attachRowClicks(card);
     });
+  });
+}
 
-    document.getElementById('btnRasio').addEventListener('click', async function(){
-      var sel = document.getElementById('satkerSelect');
-      var kode = sel.value;
-      var outRasio = document.getElementById('outRasio');
-      var cardsEl = document.getElementById('rasioCards');
-      cardsEl.innerHTML = 'Memuat...';
-      outRasio.textContent = '';
-      try {
-        var resp = await fetch('/api/get-analisa-rasio?kode=' + encodeURIComponent(kode));
-        var data = await resp.json();
-        outRasio.textContent = JSON.stringify(data, null, 2);
+// ---------- RASIO PER SATKER ----------
+async function loadRasio(kode){
+  document.getElementById('ikhtisarWrap').style.display='none';
+  document.getElementById('backToIkhtisar').style.display='inline-flex';
+  document.getElementById('dashTitle').textContent='Dashboard Analisa Rasio';
+  document.getElementById('rasioDetailWrap').style.display='none';
+  document.getElementById('laporanWrap').style.display='none';
+  document.getElementById('rasioLoading').style.display='block';
+  document.getElementById('rasioContent').style.display='none';
+  try{
+    var data = await fetchJSON('/api/get-analisa-rasio?kode='+encodeURIComponent(kode));
+    renderRasio(data);
+  }catch(e){ showRasioError(e); }
+}
+function showRasioError(e){
+  document.getElementById('rasioLoading').style.display='none';
+  var c=document.getElementById('rasioContent'); c.style.display='block';
+  c.innerHTML='<div class="state"><div class="big" style="color:var(--neg)">Gagal memuat</div><div>'+e.message+'</div></div>';
+}
+function renderRasio(data){
+  document.getElementById('rasioLoading').style.display='none';
+  var c=document.getElementById('rasioContent'); c.style.display='block';
+  if(data.isEmpty){
+    c.innerHTML='<div class="state"><div class="big">Belum ada data Neraca</div><div>Satker ini belum punya data Neraca (Kode Transaksi 0.0, Tipe AKRUAL).</div></div>';
+    document.getElementById('dashSub').textContent='Pilih satker untuk melihat analisa rasio.';
+    return;
+  }
+  document.getElementById('dashSub').textContent = data.headerInfo.nama + ' -- Kode Satker ' + data.headerInfo.kodeSatker;
 
-        if (data.error) { cardsEl.innerHTML = '<p style="color:red;">' + data.error + '</p>'; return; }
-        if (data.isEmpty) { cardsEl.innerHTML = '<p>Tidak ada data Neraca untuk satker ini.</p>'; return; }
+  var html='<div class="satker-grid">';
+  html+='<div class="satker-panel"><h3>Ringkasan Cepat</h3>' +
+    '<button class="back-btn" id="btnBukaLaporan" style="width:100%;justify-content:center;">Buka Laporan LO / LRA / Neraca &rarr;</button></div>';
+  html+='<div class="satker-panel"><h3>Analisa Rasio</h3><div class="bubble-stage"><div class="bubble-layer" id="bubbleLayer"></div></div></div>';
+  html+='</div>';
+  c.innerHTML=html;
 
-        var html = '<h3>' + data.headerInfo.nama + ' (' + data.headerInfo.kodeSatker + ')</h3>';
-        Object.keys(data.ringkasan).forEach(function(key){
-          var r = data.ringkasan[key];
-          html += '<div class="card">';
-          html += '<div class="t">' + r.label + '</div>';
-          html += '<div class="p">' + fmtPct(r.persentase) + '</div>';
-          html += '<div class="sub">' + r.labelKontra + ': ' + fmtRp(r.kontra) + ' &divide; ' + r.labelPokok + ': ' + fmtRp(r.pokok) + '</div>';
-          html += '<div class="sub">Rata-rata satker lain: ' + fmtPct(r.benchmarkPersentase) + ' (' + r.jumlahSatkerPembanding + ' satker) &middot; status: ' + (r.statusVsBenchmark || '-') + '</div>';
-          html += '</div>';
-        });
-        cardsEl.innerHTML = html;
-      } catch (e) {
-        cardsEl.innerHTML = '<p style="color:red;">Error: ' + e.message + '</p>';
-      }
+  document.getElementById('btnBukaLaporan').addEventListener('click', function(){ openLaporan(currentSatker); });
+
+  renderBubbleDashboard(data.ringkasan);
+}
+function renderBubbleDashboard(ringkasan){
+  currentRingkasan = ringkasan;
+  var keys = Object.keys(ringkasan);
+  var size = 140;
+  var html='';
+  keys.forEach(function(k){
+    var r=ringkasan[k]; var col=gradFor(r.persentase); var bdg=badgeInfo(r.statusVsBenchmark);
+    var pctDisplay = r.persentase===null?'-':fmtPct(r.persentase);
+    html+='<div class="bubble-wrap"><div class="bubble" data-key="'+k+'" style="width:'+size+'px;height:'+size+'px;' +
+      'background:radial-gradient(circle at 32% 28%, '+col.a+', '+col.b+' 75%);">' +
+      ringSvg(size, r.persentase) +
+      '<div class="pct" style="font-size:'+Math.round(size*0.19)+'px;">'+pctDisplay+'</div>' +
+      '<div class="lbl2" style="font-size:'+Math.round(size*0.05)+'px;">'+r.subLabel+'</div></div>' +
+      '<div class="bubble-caption"><div class="name">'+r.label+'</div>' +
+      '<div class="status '+bdg.cls+'">'+bdg.label+'</div>' +
+      (r.rincian && r.rincian.length ? '<div class="hint">Tekan untuk rincian per jenis</div>' : '') +
+      '</div></div>';
+  });
+  document.getElementById('bubbleLayer').innerHTML=html;
+  Array.prototype.forEach.call(document.querySelectorAll('#bubbleLayer .bubble'), function(b){
+    b.addEventListener('click', function(){ openDetail(b.getAttribute('data-key')); });
+  });
+}
+function openDetail(key){
+  var r=currentRingkasan[key]; if(!r) return;
+  document.getElementById('rasioContent').style.display='none';
+  document.getElementById('rasioDetailWrap').style.display='block';
+  document.getElementById('rdTitle').textContent=r.label;
+  document.getElementById('rdSub').textContent=r.subLabel;
+  document.getElementById('detTag').textContent='Rincian -- '+r.label;
+  document.getElementById('detTitle').textContent=r.subLabel;
+
+  var clusterHtml='';
+  if(r.rincian && r.rincian.length){
+    var vals=r.rincian.map(function(x){return x.pokok;});
+    var minV=Math.min.apply(null,vals), maxV=Math.max.apply(null,vals);
+    r.rincian.forEach(function(x){
+      var size=bubbleSize(x.pokok,minV,maxV,92,154); var xcol=gradFor(x.persentase);
+      clusterHtml+='<div class="mini-wrap"><div class="mini-bubble" style="width:'+size+'px;height:'+size+'px;' +
+        'background:radial-gradient(circle at 32% 28%, '+xcol.a+', '+xcol.b+' 75%);">' +
+        ringSvg(size,x.persentase) +
+        '<div class="v" style="font-size:'+Math.round(size*0.16)+'px;">'+fmtPct(x.persentase)+'</div>' +
+        '<div class="p" style="font-size:'+Math.round(size*0.07)+'px;">'+fmtRp(x.pokok)+'</div></div>' +
+        '<div class="mini-caption"><div class="n">'+x.label+'</div><div class="sub">Kontra '+fmtRp(x.kontra)+'</div></div></div>';
     });
+  } else {
+    var sizePokok=176; var sizeKontra=bubbleSize(r.kontra,0,Math.max(r.pokok,r.kontra,1),92,176);
+    var col=gradFor(r.persentase);
+    clusterHtml+='<div class="mini-wrap"><div class="mini-bubble" style="width:'+sizePokok+'px;height:'+sizePokok+'px;' +
+      'background:radial-gradient(circle at 32% 28%, #4C7396, #24425E 75%);">' +
+      '<div class="v" style="font-size:19px;">'+fmtRp(r.pokok)+'</div><div class="p" style="font-size:10.5px;">POKOK</div></div>' +
+      '<div class="mini-caption"><div class="n">'+r.labelPokok+'</div></div></div>';
+    clusterHtml+='<div class="mini-wrap"><div class="mini-bubble" style="width:'+sizeKontra+'px;height:'+sizeKontra+'px;' +
+      'background:radial-gradient(circle at 32% 28%, '+col.a+', '+col.b+' 75%);">' +
+      '<div class="v" style="font-size:'+Math.round(sizeKontra*0.115)+'px;">'+fmtRp(r.kontra)+'</div>' +
+      '<div class="p" style="font-size:'+Math.round(sizeKontra*0.06)+'px;">KONTRA</div></div>' +
+      '<div class="mini-caption"><div class="n">'+r.labelKontra+'</div></div></div>';
+  }
+  document.getElementById('detailCluster').innerHTML=clusterHtml;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('backToSatkerDash').addEventListener('click', function(){
+  document.getElementById('rasioDetailWrap').style.display='none';
+  document.getElementById('rasioContent').style.display='block';
+});
 
-    document.getElementById('btnIkhtisar').addEventListener('click', async function(){
-      var outIkhtisar = document.getElementById('outIkhtisar');
-      var cardsEl = document.getElementById('ikhtisarCards');
-      cardsEl.innerHTML = 'Memuat...';
-      outIkhtisar.textContent = '';
-      try {
-        var resp = await fetch('/api/get-dashboard-ikhtisar');
-        var data = await resp.json();
-        outIkhtisar.textContent = JSON.stringify(data, null, 2);
+// ---------- LAPORAN LO/LRA/NERACA ----------
+function openLaporan(kode){
+  document.getElementById('rasioContent').style.display='none';
+  document.getElementById('rasioDetailWrap').style.display='none';
+  document.getElementById('laporanWrap').style.display='block';
+  document.getElementById('laporanSub').textContent = document.getElementById('dashSub').textContent;
+  currentLaporanJenis='lo';
+  Array.prototype.forEach.call(document.querySelectorAll('.laporan-tab'), function(t){ t.classList.toggle('active', t.getAttribute('data-jenis')==='lo'); });
+  loadLaporan(kode,'lo');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('backFromLaporan').addEventListener('click', function(){
+  document.getElementById('laporanWrap').style.display='none';
+  document.getElementById('rasioContent').style.display='block';
+});
+Array.prototype.forEach.call(document.querySelectorAll('.laporan-tab'), function(t){
+  t.addEventListener('click', function(){
+    Array.prototype.forEach.call(document.querySelectorAll('.laporan-tab'), function(x){x.classList.remove('active');});
+    t.classList.add('active');
+    currentLaporanJenis = t.getAttribute('data-jenis');
+    loadLaporan(currentSatker, currentLaporanJenis);
+  });
+});
+async function loadLaporan(kode, jenis){
+  var c=document.getElementById('laporanContent');
+  c.innerHTML='<div class="state"><div class="spinner"></div><div class="big">Memuat laporan...</div></div>';
+  try{
+    var data = await fetchJSON('/api/get-laporan?kode='+encodeURIComponent(kode)+'&jenis='+jenis);
+    renderLaporan(data, jenis);
+  }catch(e){ c.innerHTML='<div class="state"><div class="big" style="color:var(--neg)">Gagal memuat</div><div>'+e.message+'</div></div>'; }
+}
+function renderLaporan(data, jenis){
+  var c=document.getElementById('laporanContent');
+  if(data.isEmpty){ c.innerHTML='<div class="state"><div class="big">Belum ada data</div></div>'; return; }
 
-        if (data.error) { cardsEl.innerHTML = '<p style="color:red;">' + data.error + '</p>'; return; }
-        if (data.isEmpty) { cardsEl.innerHTML = '<p>Belum ada data Neraca.</p>'; return; }
+  var judul = jenis==='lo' ? 'Laporan Operasional' : (jenis==='lra' ? 'Laporan Realisasi Anggaran' : 'Neraca');
+  var html='<div class="doc-head"><div class="rule"></div><div><div class="doc-title">'+judul+'</div><div class="doc-sub">'+data.headerInfo.nama+'</div></div></div>';
 
-        var html = '';
-        html += '<div class="card"><div class="t">Ringkasan</div>' +
-          '<div class="sub">Satker terpantau: ' + data.ringkasanStrip.jumlahSatker +
-          ' &middot; Perlu perhatian: ' + data.ringkasanStrip.perluPerhatian +
-          ' &middot; Di bawah rata-rata: ' + data.ringkasanStrip.diBawahRataRata + '</div>';
-        if (data.ringkasanStrip.sorotan) {
-          html += '<div class="sub" style="margin-top:6px;"><b>Sorotan:</b> ' + data.ringkasanStrip.sorotan.namaSatker +
-            ' (di atas rata-rata pada ' + data.ringkasanStrip.sorotan.aboveCount + '/' + data.ringkasanStrip.sorotan.totalRasioCount + ' rasio)</div>';
-        }
-        html += '</div>';
+  var groupsA = data.groups.filter(function(g){ return g.sisi!=='BEBAN' && g.sisi!=='KEWAJIBAN_EKUITAS'; });
+  var groupsB = data.groups.filter(function(g){ return g.sisi==='BEBAN' || g.sisi==='KEWAJIBAN_EKUITAS'; });
 
-        html += '<h3>Peringkat Rasio (Top 5 per kartu)</h3>';
-        data.rasioRanking.forEach(function(r){
-          html += '<div class="card"><div class="t">' + r.label + '</div><div class="sub">' + r.jumlahSatkerAda + ' satker punya data</div>';
-          r.satkerList.slice(0, 5).forEach(function(s, i){
-            html += '<div class="sub">' + (i+1) + '. ' + s.namaSatker + ' -- ' + fmtPct(s.persentase) + '</div>';
-          });
-          if (!r.satkerList.length) html += '<div class="sub">(belum ada satker dengan data lengkap)</div>';
-          html += '</div>';
+  function renderGroups(groups){
+    var h='';
+    groups.forEach(function(g){
+      h+='<div class="group"><div class="group-title">'+g.title+'</div><table><tbody>';
+      g.subgroups.forEach(function(sg){
+        h+='<tr class="subgroup-row"><td colspan="2">'+sg.label+'</td></tr>';
+        sg.accounts.forEach(function(ac){
+          h+='<tr class="account"><td>'+ac.label+'</td><td class="'+(ac.value<0?'neg':'')+'">'+fmt(ac.value)+'</td></tr>';
         });
-
-        html += '<h3>Akun Perhatian Khusus (Top 5 per akun)</h3>';
-        data.akunKhususList.filter(function(a){ return a.mode !== 'kosong'; }).forEach(function(a){
-          html += '<div class="card"><div class="t">' + a.label + '</div><div class="sub">Kode ' + a.kode + ' &middot; total semua satker: ' + fmtRp(a.totalSemuaSatker) + '</div>';
-          a.satkerList.slice(0, 5).forEach(function(s, i){
-            html += '<div class="sub">' + (i+1) + '. ' + s.namaSatker + ' -- ' + fmtRp(s.nilai) + '</div>';
-          });
-          html += '</div>';
-        });
-
-        cardsEl.innerHTML = html;
-      } catch (e) {
-        cardsEl.innerHTML = '<p style="color:red;">Error: ' + e.message + '</p>';
-      }
+      });
+      h+='<tr class="subtotal"><td>'+g.subtotalLabel+'</td><td class="'+(g.subtotal<0?'neg':'')+'">'+fmt(g.subtotal)+'</td></tr>';
+      h+='</tbody></table></div>';
     });
+    return h;
+  }
 
-    document.getElementById('btnLaporan').addEventListener('click', async function(){
-      var kode = document.getElementById('satkerSelect').value;
-      var jenis = document.getElementById('jenisLaporan').value;
-      var outLaporan = document.getElementById('outLaporan');
-      var cardsEl = document.getElementById('laporanCards');
-      cardsEl.innerHTML = 'Memuat...';
-      outLaporan.textContent = '';
-      try {
-        var resp = await fetch('/api/get-laporan?kode=' + encodeURIComponent(kode) + '&jenis=' + jenis);
-        var data = await resp.json();
-        outLaporan.textContent = JSON.stringify(data, null, 2);
+  html += renderGroups(groupsA);
+  if(jenis==='lo') html += '<div class="hero"><div><div class="label">Jumlah Pendapatan</div><div class="value">Rp '+fmt(data.totalPendapatan)+'</div></div></div>';
+  if(jenis==='lra') html += '<div class="hero"><div><div class="label">Jumlah Realisasi Pendapatan</div><div class="value">Rp '+fmt(data.totalPendapatan)+'</div></div></div>';
+  if(jenis==='neraca') html += '<div class="hero"><div><div class="label">Jumlah Aset</div><div class="value">Rp '+fmt(data.totalAset)+'</div></div></div>';
 
-        if (data.error) { cardsEl.innerHTML = '<p style="color:red;">' + data.error + '</p>'; return; }
-        if (data.isEmpty) { cardsEl.innerHTML = '<p>Tidak ada data untuk laporan ini.</p>'; return; }
+  html += renderGroups(groupsB);
 
-        var html = '<h3>' + data.headerInfo.nama + '</h3>';
-        data.groups.forEach(function(g){
-          html += '<div class="card"><div class="t">' + g.title + '</div>';
-          g.subgroups.forEach(function(sg){
-            html += '<div class="sub" style="font-weight:600;margin-top:6px;">' + sg.label + '</div>';
-            sg.accounts.forEach(function(ac){
-              html += '<div class="sub">' + ac.label + ': ' + fmtRp(ac.value) + '</div>';
-            });
-          });
-          html += '<div class="sub" style="font-weight:700;margin-top:6px;">' + g.subtotalLabel + ': ' + fmtRp(g.subtotal) + '</div>';
-          html += '</div>';
-        });
+  if(jenis==='lo'){
+    html += '<div class="hero"><div><div class="label">Surplus / Defisit -- LO</div><div class="value '+(data.surplusDefisitLO<0?'neg':'pos')+'">Rp '+fmt(data.surplusDefisitLO)+'</div></div>' +
+      '<div class="tag">'+(data.surplusDefisitLO<0?'Defisit':'Surplus')+'</div></div>';
+  } else if(jenis==='lra'){
+    html += '<div class="hero"><div><div class="label">Surplus / Defisit -- LRA</div><div class="value '+(data.surplusDefisitLRA<0?'neg':'pos')+'">Rp '+fmt(data.surplusDefisitLRA)+'</div></div>' +
+      '<div class="tag">'+(data.surplusDefisitLRA<0?'Defisit':'Surplus')+'</div></div>';
+  } else if(jenis==='neraca'){
+    html += '<div class="hero" style="background:'+(data.isBalanced?'var(--navy-deep)':'var(--neg)')+';">' +
+      '<div><div class="label">'+(data.isBalanced?'Neraca Seimbang':'Neraca Tidak Seimbang')+'</div>' +
+      '<div class="value">Jumlah Kewajiban dan Ekuitas: Rp '+fmt(data.totalKewajibanDanEkuitas)+'</div></div>' +
+      '<div class="tag">Selisih Rp '+fmt(data.selisih)+'</div></div>';
+  }
 
-        if (jenis === 'lo') {
-          html += '<div class="card"><div class="t">Surplus/Defisit LO</div><div class="p">' + fmtRp(data.surplusDefisitLO) + '</div></div>';
-        } else if (jenis === 'lra') {
-          html += '<div class="card"><div class="t">Surplus/Defisit LRA</div><div class="p">' + fmtRp(data.surplusDefisitLRA) + '</div></div>';
-        } else if (jenis === 'neraca') {
-          html += '<div class="card"><div class="t">' + (data.isBalanced ? 'Neraca Seimbang' : 'Neraca TIDAK Seimbang') + '</div>' +
-            '<div class="sub">Total Aset: ' + fmtRp(data.totalAset) + ' &middot; Total Kewajiban+Ekuitas: ' + fmtRp(data.totalKewajibanDanEkuitas) + ' &middot; Selisih: ' + fmtRp(data.selisih) + '</div></div>';
-        }
+  c.innerHTML=html;
+}
 
-        cardsEl.innerHTML = html;
-      } catch (e) {
-        cardsEl.innerHTML = '<p style="color:red;">Error: ' + e.message + '</p>';
-      }
-    });
-  </script>
+// ---------- NAVIGASI KEMBALI KE IKHTISAR ----------
+function showIkhtisarView(){
+  currentSatker=null; satkerInput.value='';
+  document.getElementById('backToIkhtisar').style.display='none';
+  document.getElementById('dashTitle').textContent='Ikhtisar Seluruh Satker';
+  document.getElementById('dashSub').textContent='Ringkasan peringkat rasio dari seluruh satker. Pilih satker di atas untuk melihat detail.';
+  document.getElementById('rasioLoading').style.display='none';
+  document.getElementById('rasioContent').style.display='none';
+  document.getElementById('rasioDetailWrap').style.display='none';
+  document.getElementById('laporanWrap').style.display='none';
+  document.getElementById('ikhtisarWrap').style.display='block';
+}
+document.getElementById('backToIkhtisar').addEventListener('click', showIkhtisarView);
+
+// ---------- INIT ----------
+loadSatkerList();
+loadIkhtisar();
+</script>
 </body>
 </html>
