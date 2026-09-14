@@ -397,4 +397,22 @@ function getAnalisaRasio(kodeSatker, allRows, refMap) {
   return { isEmpty: false, belumDitag: manualGroups.length === 0, headerInfo: headerInfoFrom_(rowsSatker, kodeSatker), ringkasan };
 }
 
-module.exports = { getAnalisaRasio, computeRasioComponents_, neracaSignInfo_ };
+/** Setara rasioMetaUntukIkhtisar_() di DashboardIkhtisar.gs. */
+function rasioMetaUntukIkhtisar_(key, refMap) {
+  if (key === 'AsetTetap') {
+    return { label: RASIO_LABEL.AsetTetap, subLabel: RASIO_SUBLABEL.AsetTetap, labelPokok: RASIO_LABEL_POKOK.AsetTetap, labelKontra: RASIO_LABEL_KONTRA.AsetTetap };
+  }
+  if (PIUTANG_RASIO_META[key]) {
+    const pj = PIUTANG_RASIO_META[key];
+    return { label: pj.label, subLabel: pj.subLabel, labelPokok: pj.labelPokok, labelKontra: pj.labelKontra };
+  }
+  if (key === 'AsetTidakDigunakan') {
+    return { label: ASET_TIDAK_DIGUNAKAN_META.label, subLabel: ASET_TIDAK_DIGUNAKAN_META.subLabel, labelPokok: ASET_TIDAK_DIGUNAKAN_META.labelPokok, labelKontra: ASET_TIDAK_DIGUNAKAN_META.labelKontra };
+  }
+  return { label: key, subLabel: '', labelPokok: 'Pokok', labelKontra: 'Kontra' };
+}
+
+module.exports = {
+  getAnalisaRasio, computeRasioComponents_, neracaSignInfo_,
+  collectManualRasioGroups_, rasioMetaUntukIkhtisar_
+};
