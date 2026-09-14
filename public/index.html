@@ -40,6 +40,18 @@
     <details><summary>Lihat JSON mentah</summary><pre id="outIkhtisar"></pre></details>
   </section>
 
+  <section>
+    <h2>4. Laporan LO / LRA / Neraca</h2>
+    <select id="jenisLaporan">
+      <option value="lo">Laporan Operasional (LO)</option>
+      <option value="lra">Laporan Realisasi Anggaran (LRA)</option>
+      <option value="neraca">Neraca</option>
+    </select>
+    <button id="btnLaporan">Tampilkan Laporan</button>
+    <div id="laporanCards"></div>
+    <details><summary>Lihat JSON mentah</summary><pre id="outLaporan"></pre></details>
+  </section>
+
   <script>
     var allSatker = [];
 
@@ -140,6 +152,49 @@
           });
           html += '</div>';
         });
+
+        cardsEl.innerHTML = html;
+      } catch (e) {
+        cardsEl.innerHTML = '<p style="color:red;">Error: ' + e.message + '</p>';
+      }
+    });
+
+    document.getElementById('btnLaporan').addEventListener('click', async function(){
+      var kode = document.getElementById('satkerSelect').value;
+      var jenis = document.getElementById('jenisLaporan').value;
+      var outLaporan = document.getElementById('outLaporan');
+      var cardsEl = document.getElementById('laporanCards');
+      cardsEl.innerHTML = 'Memuat...';
+      outLaporan.textContent = '';
+      try {
+        var resp = await fetch('/api/get-laporan?kode=' + encodeURIComponent(kode) + '&jenis=' + jenis);
+        var data = await resp.json();
+        outLaporan.textContent = JSON.stringify(data, null, 2);
+
+        if (data.error) { cardsEl.innerHTML = '<p style="color:red;">' + data.error + '</p>'; return; }
+        if (data.isEmpty) { cardsEl.innerHTML = '<p>Tidak ada data untuk laporan ini.</p>'; return; }
+
+        var html = '<h3>' + data.headerInfo.nama + '</h3>';
+        data.groups.forEach(function(g){
+          html += '<div class="card"><div class="t">' + g.title + '</div>';
+          g.subgroups.forEach(function(sg){
+            html += '<div class="sub" style="font-weight:600;margin-top:6px;">' + sg.label + '</div>';
+            sg.accounts.forEach(function(ac){
+              html += '<div class="sub">' + ac.label + ': ' + fmtRp(ac.value) + '</div>';
+            });
+          });
+          html += '<div class="sub" style="font-weight:700;margin-top:6px;">' + g.subtotalLabel + ': ' + fmtRp(g.subtotal) + '</div>';
+          html += '</div>';
+        });
+
+        if (jenis === 'lo') {
+          html += '<div class="card"><div class="t">Surplus/Defisit LO</div><div class="p">' + fmtRp(data.surplusDefisitLO) + '</div></div>';
+        } else if (jenis === 'lra') {
+          html += '<div class="card"><div class="t">Surplus/Defisit LRA</div><div class="p">' + fmtRp(data.surplusDefisitLRA) + '</div></div>';
+        } else if (jenis === 'neraca') {
+          html += '<div class="card"><div class="t">' + (data.isBalanced ? 'Neraca Seimbang' : 'Neraca TIDAK Seimbang') + '</div>' +
+            '<div class="sub">Total Aset: ' + fmtRp(data.totalAset) + ' &middot; Total Kewajiban+Ekuitas: ' + fmtRp(data.totalKewajibanDanEkuitas) + ' &middot; Selisih: ' + fmtRp(data.selisih) + '</div></div>';
+        }
 
         cardsEl.innerHTML = html;
       } catch (e) {
